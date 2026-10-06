@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {
   Text,
   View,
@@ -45,7 +47,7 @@ const SignUp = () => {
 
     if (!email) {
       newErrors.email = 'Email is required';
-    } else if (!/^[a-z][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+    } else if (!/^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
       newErrors.email = 'Enter a valid email';
     }
 
@@ -76,11 +78,19 @@ const SignUp = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const createAccount = () => {
+  const createAccount = async () => {
     const isValid = validateForm();
 
     if (isValid) {
-      navigation.replace('MainTabs');
+      await AsyncStorage.setItem('userData',
+        JSON.stringify({
+          email : formData.email,
+          password : formData.password,
+        })
+      )
+
+
+      navigation.navigate('SignIn');
     }
   };
 

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { useNavigation } from '@react-navigation/native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import {
   Text,
@@ -26,6 +28,20 @@ const SignIn = () => {
   });
 
   const [errors, setErrors] = useState({});
+
+  const [ savedUser, setSavedUser ] = useState(null);
+
+  useEffect(() => {
+    const getUserInfo = async () => {
+      const userData = await AsyncStorage.getItem('userData');
+
+      if(userData) {
+        setSavedUser(JSON.parse(userData));
+      }
+    };
+
+    getUserInfo();
+  }, []);
 
   const handleChange = (field, value) => {
     setFormData(prevData => ({
@@ -56,9 +72,26 @@ const SignIn = () => {
   const createAccount = () => {
     const isValid = validateForm();
 
-    if (isValid) {
-      navigation.replace('MainTabs');
+    if (!isValid) {
+      return;
     }
+
+    if(!savedUser) {
+      setErrors({
+        email : "No account found.",
+      });
+      return;
+    }
+
+    if( formData.email !== savedUser.email || formData.password !== savedUser.password ) {
+      setErrors({
+        email : "Email or password incorrect",
+      });
+      return;
+    }
+
+    navigation.replace('MainTabs');
+
   };
 
   return (
